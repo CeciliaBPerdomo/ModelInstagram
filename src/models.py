@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Table, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -8,23 +8,45 @@ from eralchemy import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+seguidores = Table('seguidores', 
+    Base.metadata,
+    Column('id_user_seg', Integer, ForeignKey('usuario.id'), primary_key=True),
+    Column('id_user_followers', Integer, ForeignKey('usuario.id'), primary_key=True)
+)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+class Usuario(Base):
+    __tablename__ = 'usuario'
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    nombre = Column(String(250), nullable=False)
+    apellido = Column(String(250), nullable=False)
+    userName = Column(String(250), nullable=False)
+    eMail = Column(String(250), nullable=False)
+    password = Column(String(250), nullable=False)
+    #Seguidores
+    following = relationship('followers', secondary=seguidores)
+
+
+class Comments(Base):
+    __tablename__ = 'comments'
+    id = Column(Integer, primary_key=True)
+    comentario = Column(String(250), nullable=False)
+    id_user = Column(Integer, ForeignKey('usuario.id'), nullable=False)
+    id_post = Column(Integer, ForeignKey('post.id'), nullable=False)
+
+class Media(Base):
+    __tablename__ = 'media'
+    id = Column(Integer, primary_key=True)
+    tipo = Column(String(250), nullable=False)
+    url = Column(String(250), nullable=False)
+    id_post = Column(Integer, ForeignKey('post.id'), nullable=False)
+
+class Post(Base):
+    __tablename__ = 'post'
+    id = Column(Integer, primary_key=True)
+    # Comentarios
+    comments = relationship("Comments", backref="comments")
+    #Media
+    media = relationship("Media", backref="media")
 
     def to_dict(self):
         return {}
